@@ -72,14 +72,9 @@ namespace ToDoAPI.Extensions
                     return Results.BadRequest(validationResults);
                 }
 
-                var result = await repo.CreateAsync(item);
-                if (result > 0)
-                {
-                    var createdItem = await repo.GetLastInsertedItemAsync();
-                    return Results.Created($"/todo/{createdItem!.Id}", createdItem);
-                }
-                return Results.BadRequest("Item could not be created.");
-
+                var insertedId = await repo.CreateAsync(item);
+                var createdItem = await repo.GetByIdAsync(insertedId);
+                return Results.Created($"/todo/{insertedId}", createdItem);
             })
             .WithName("CreateTodo")
             .WithDescription("Creates a ToDo item.");

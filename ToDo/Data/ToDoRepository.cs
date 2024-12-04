@@ -42,9 +42,11 @@ namespace ToDoAPI.Data
         public async Task<int> CreateAsync(ToDoItem toDoItem)
         {
             using var connection = CreateConnection();
-            return await connection.ExecuteAsync(
-                "INSERT INTO \"ToDoItems\" (\"Title\", \"Description\", \"ExpiryDate\", \"PercentComplete\", \"IsDone\") VALUES (@Title, @Description, @ExpiryDate, @PercentComplete, @IsDone)",
+            var insertedId = await connection.ExecuteScalarAsync<int>(
+                "INSERT INTO \"ToDoItems\" (\"Title\", \"Description\", \"ExpiryDate\", \"PercentComplete\", \"IsDone\") " +
+                "VALUES (@Title, @Description, @ExpiryDate, @PercentComplete, @IsDone) RETURNING \"Id\"",
                 toDoItem);
+            return insertedId;
         }
 
         public async Task<int> UpdateAsync(ToDoItem toDoItem)
@@ -59,13 +61,6 @@ namespace ToDoAPI.Data
         {
             using var connection = CreateConnection();
             return await connection.ExecuteAsync("DELETE FROM \"ToDoItems\" WHERE \"Id\" = @Id", new { Id = id });
-        }
-
-        public async Task<ToDoItem?> GetLastInsertedItemAsync()
-        {
-            using var connection = CreateConnection();
-            return await connection.QueryFirstOrDefaultAsync<ToDoItem>(
-                "SELECT \"Id\", \"Title\", \"Description\", \"ExpiryDate\", \"PercentComplete\", \"IsDone\" FROM \"ToDoItems\" ORDER BY \"Id\" DESC LIMIT 1");
         }
     }
 }
